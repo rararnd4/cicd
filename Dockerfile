@@ -1,12 +1,10 @@
-# 빌드 스테이지
-FROM gradle:8.14-jdk17 AS build
+FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app
-COPY . .
-RUN gradle bootJar --no-daemon
-
-# 실행 스테이지
-FROM eclipse-temurin:17-jdk-jammy
-WORKDIR /app
-COPY --from=build /app/build/libs/*.jar app.jar
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+COPY build/libs/*.jar app.jar
+RUN chown appuser:appuser app.jar
+USER appuser
 EXPOSE 8080
+HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
+  CMD curl -f http://localhost:8080/actuator/health || exit 1
 ENTRYPOINT ["java", "-jar", "app.jar"]

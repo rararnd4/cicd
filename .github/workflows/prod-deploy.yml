@@ -7,45 +7,11 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: 코드 체크아웃
-        uses: actions/checkout@v3
-
-      - name: JDK 17 설정
-        uses: actions/setup-java@v3
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-
-      - name: Gradle 빌드
-        run: ./gradlew bootJar --no-daemon
-
-      - name: Docker 이미지 빌드
-        run: docker build -t my-cicd-app:latest .
-
-      - name: Docker 이미지 저장
-        run: docker save my-cicd-app:latest | gzip > my-cicd-app.tar.gz
-
-      - name: EC2로 이미지 전송
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.PROD_EC2_HOST }}
-          username: ubuntu
-          key: ${{ secrets.PROD_EC2_KEY }}
-          source: "my-cicd-app.tar.gz,docker-compose.prod.yml"
-          target: "~/app"
-
-      - name: EC2에서 배포
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.PROD_EC2_HOST }}
-          username: ubuntu
-          key: ${{ secrets.PROD_EC2_KEY }}
-          script: |
-            cd ~/app
-            docker load < my-cicd-app.tar.gz
-            docker compose -f docker-compose.prod.yml down
-            docker compose -f docker-compose.prod.yml up -d
-            docker image prune -f
+    uses: ./.github/workflows/deploy.yml
+    with:
+      environment: prod
+      compose_file: docker-compose.prod.yml
+      image_tag: ${{ github.sha }}
+    secrets:
+      EC2_HOST: ${{ secrets.PROD_EC2_HOST }}
+      EC2_KEY: ${{ secrets.PROD_EC2_KEY }}

@@ -1,0 +1,14 @@
+.git
+.github
+.gradle
+.idea
+.vscode
+*.iml
+*.iws
+*.ipr
+src
+gradle
+gradlew
+gradlew.bat
+build/reports
+build/tmp
