@@ -5,7 +5,7 @@ services:
     image: my-cicd-app:latest
     container_name: my-cicd-app-dev
     ports:
-      - "8080:8080"
+      - "8081:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=dev
     restart: always
